@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>邮箱验证页面</title>
+</head>
+<body>
+<div style="margin:50px;">
+    <input type="email" id="email" placeholder="请输入邮箱" style="padding:8px;width:300px;">
+    <button id="sendBtn" style="padding:8px 16px;">发送验证码</button>
+    <br><br>
+    <input type="text" id="code" placeholder="输入邮箱收到的验证码" style="padding:8px;width:300px;">
+    <button id="checkBtn" style="padding:8px 16px;">确认验证</button>
+    <p id="tip" style="color:red;"></p>
+</div>
+
+<script>
+// ==========【重要】把这里换成你的Worker地址！==========
+const API_URL = "https://email-code-api.xxx.workers.dev";
+// =====================================================
+const tip = document.getElementById("tip");
+
+// 发送验证码按钮
+document.getElementById("sendBtn").onclick = async ()=>{
+    const email = document.getElementById("email").value.trim();
+    tip.innerText = "正在发送请求...";
+    const res = await fetch(API_URL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            action:"send",
+            email:email
+        })
+    })
+    const data = await res.json();
+    tip.innerText = data.msg;
+}
+
+// 校验验证码按钮
+document.getElementById("checkBtn").onclick = async ()=>{
+    const email = document.getElementById("email").value.trim();
+    const code = document.getElementById("code").value.trim();
+    tip.innerText = "正在校验...";
+    const res = await fetch(API_URL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            action:"verify",
+            email:email,
+            code:code
+        })
+    })
+    const data = await res.json();
+    tip.innerText = data.msg;
+    // 验证成功，自动跳转到百度
+    if(data.success){
+        location.href = "https://www.baidu.com";
+    }
+}
+</script>
+</body>
+</html>
