@@ -16,7 +16,7 @@
 
 <script>
 // 改成你自己Worker地址
-const API_URL = "https://email-code-api.xxx.workers.dev";
+const API_URL = "https://email-code-api.nameiszcy.workers.dev/";
 const tip = document.getElementById("tip");
 const sendBtn = document.getElementById("sendBtn");
 
@@ -67,7 +67,7 @@ sendBtn.onclick = async ()=>{
 document.getElementById("checkBtn").onclick = async ()=>{
     const email = document.getElementById("email").value.trim();
     const code = document.getElementById("code").value.trim();
-    tip.innerText = "正在校验...";
+    tip.innerText = "正在校验...完成后跳转至百度";
     try{
         const res = await fetch(API_URL,{
             method:"POST",
