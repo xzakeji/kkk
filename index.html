@@ -15,46 +15,76 @@
 </div>
 
 <script>
-// ==========【重要】把这里换成你的Worker地址！==========
-const API_URL = "https://email-code-api.nameiszcy.workers.dev/";
-// =====================================================
+// 改成你自己Worker地址
+const API_URL = "https://email-code-api.xxx.workers.dev";
 const tip = document.getElementById("tip");
+const sendBtn = document.getElementById("sendBtn");
 
-// 发送验证码按钮
-document.getElementById("sendBtn").onclick = async ()=>{
+sendBtn.onclick = async ()=>{
     const email = document.getElementById("email").value.trim();
+    if(!email){
+        tip.innerText = "请填写邮箱";
+        return;
+    }
     tip.innerText = "正在发送请求...";
-    const res = await fetch(API_URL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            action:"send",
-            email:email
+    sendBtn.disabled = true;
+    let timer = 60;
+    const timerTask = setInterval(()=>{
+        sendBtn.innerText = `${timer}秒后重试`;
+        timer--;
+        if(timer<0){
+            clearInterval(timerTask);
+            sendBtn.innerText = "发送验证码";
+            sendBtn.disabled = false;
+        }
+    },1000);
+
+    try{
+        const res = await fetch(API_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                action:"send",
+                email:email
+            })
         })
-    })
-    const data = await res.json();
-    tip.innerText = data.msg;
+        const data = await res.json();
+        tip.innerText = data.msg;
+        // 如果后端提示频繁，直接重置按钮
+        if(data.msg.includes("等待")){
+            clearInterval(timerTask);
+            sendBtn.innerText = "发送验证码";
+            sendBtn.disabled = false;
+        }
+    }catch(err){
+        tip.innerText = "请求失败，请稍后重试";
+        clearInterval(timerTask);
+        sendBtn.innerText = "发送验证码";
+        sendBtn.disabled = false;
+    }
 }
 
-// 校验验证码按钮
 document.getElementById("checkBtn").onclick = async ()=>{
     const email = document.getElementById("email").value.trim();
     const code = document.getElementById("code").value.trim();
     tip.innerText = "正在校验...";
-    const res = await fetch(API_URL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            action:"verify",
-            email:email,
-            code:code
+    try{
+        const res = await fetch(API_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                action:"verify",
+                email:email,
+                code:code
+            })
         })
-    })
-    const data = await res.json();
-    tip.innerText = data.msg;
-    // 验证成功，自动跳转到百度
-    if(data.success){
-        location.href = "https://www.baidu.com";
+        const data = await res.json();
+        tip.innerText = data.msg;
+        if(data.success){
+            location.href = "https://www.baidu.com";
+        }
+    }catch(err){
+        tip.innerText = "校验请求异常";
     }
 }
 </script>
